@@ -5,7 +5,8 @@ export default function LoginScreen({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent default form submission
     const token = await login(username, password);
     if (token) {
       setToken(token);
@@ -24,7 +25,11 @@ export default function LoginScreen({ setToken }) {
         background: '#f8f9fa',
       }}
     >
-      <div className="card p-4 shadow-sm" style={{ width: '100%', maxWidth: 380 }}>
+      <form
+        onSubmit={handleLogin}
+        className="card p-4 shadow-sm"
+        style={{ width: '100%', maxWidth: 380 }}
+      >
         <h4 className="mb-3 border-bottom pb-2 text-center">Login</h4>
 
         <div className="mb-3">
@@ -51,7 +56,7 @@ export default function LoginScreen({ setToken }) {
           />
         </div>
 
-        <button className="btn btn-primary w-100 mb-2" onClick={handleLogin}>
+        <button type="submit" className="btn btn-primary w-100 mb-2">
           Login
         </button>
 
@@ -59,7 +64,7 @@ export default function LoginScreen({ setToken }) {
           <a href="#" className="me-3 small">Signup</a>
           <a href="#" className="small">Reset Password</a>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
