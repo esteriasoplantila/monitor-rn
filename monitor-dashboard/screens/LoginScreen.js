@@ -1,70 +1,100 @@
 import React, { useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import { TextInput, Button, Card, Title, Text } from 'react-native-paper';
 import { login } from '../services/api';
 
 export default function LoginScreen({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+  const handleLogin = async () => {
+    setLoading(true);
     const token = await login(username, password);
+    setLoading(false);
+
     if (token) {
       setToken(token);
     } else {
-      alert('Invalid credentials or server error.');
+      Alert.alert('Login Failed', 'Invalid credentials or server error.');
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: '#f8f9fa',
-      }}
-    >
-      <form
-        onSubmit={handleLogin}
-        className="card p-4 shadow-sm"
-        style={{ width: '100%', maxWidth: 380 }}
-      >
-        <h4 className="mb-3 border-bottom pb-2 text-center">Login</h4>
+    <View style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title style={styles.title}>🔐 Login</Title>
 
-        <div className="mb-3">
-          <label htmlFor="username" className="form-label">Email address</label>
-          <input
-            type="text"
-            id="username"
-            className="form-control"
-            placeholder="Enter email"
+          <TextInput
+            label="Email Address"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+            mode="outlined"
           />
-        </div>
 
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">Password</label>
-          <input
-            type="password"
-            id="password"
-            className="form-control"
-            placeholder="Password"
+          <TextInput
+            label="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+            mode="outlined"
           />
-        </div>
 
-        <button type="submit" className="btn btn-primary w-100 mb-2">
-          Login
-        </button>
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            loading={loading}
+            disabled={loading}
+            style={styles.button}
+          >
+            Login
+          </Button>
 
-        <div className="text-center">
-          <a href="#" className="me-3 small">Signup</a>
-          <a href="#" className="small">Reset Password</a>
-        </div>
-      </form>
-    </div>
+          <View style={styles.links}>
+            <Text style={styles.link}>Signup</Text>
+            <Text style={styles.link}>Reset Password</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  card: {
+    padding: 20,
+    borderRadius: 16,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 22,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  input: {
+    marginBottom: 16,
+  },
+  button: {
+    marginTop: 10,
+  },
+  links: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  link: {
+    fontSize: 14,
+    color: '#007bff',
+  },
+});

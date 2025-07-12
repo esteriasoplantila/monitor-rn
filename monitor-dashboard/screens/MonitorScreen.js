@@ -1,30 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
-import { getMonitorData } from '../services/api';
-import MonitorCard from '../components/MonitorCard';
+import { ScrollView, StyleSheet, View, Dimensions, TouchableOpacity } from 'react-native';
+import { Text, Card, Title } from 'react-native-paper';
 import moment from 'moment';
 import { PieChart } from 'react-native-chart-kit';
-
+import { getMonitorData } from '../services/api';
+import MonitorCard from '../components/MonitorCard';
 
 export default function MonitorScreen({ token, setToken }) {
   const [data, setData] = useState([]);
   const [now, setNow] = useState(moment().format('YYYY-MM-DD HH:mm:ss'));
-  
 
   useEffect(() => {
     const fetchData = () => {
       getMonitorData(token).then(setData).catch(console.error);
     };
 
-    fetchData(); // initial load
+    fetchData();
 
     const clockInterval = setInterval(() => {
       setNow(moment().format('YYYY-MM-DD HH:mm:ss'));
     }, 1000);
 
-    const dataRefreshInterval = setInterval(() => {
-      fetchData();
-    }, 5 * 60 * 1000); // 5 minutes
+    const dataRefreshInterval = setInterval(fetchData, 5 * 60 * 1000);
 
     return () => {
       clearInterval(clockInterval);
@@ -38,120 +35,105 @@ export default function MonitorScreen({ token, setToken }) {
 
   const screenWidth = Dimensions.get('window').width;
 
-  const handleLogout = () => {
-    setToken('');
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.dashboard}>
-        <View style={styles.headerRow}>
-          <Text style={styles.header}>📊 Monitor Dashboard</Text>
-          <TouchableOpacity onPress={handleLogout}>
-            <Text style={styles.logout}>Logout ⎋</Text>
-          </TouchableOpacity>
-        </View>
+      <Card style={styles.dashboard}>
+        <Card.Content>
+          <View style={styles.headerRow}>
+            <Title style={styles.header}>📊 Monitor Dashboard</Title>
+          </View>
 
-        <Text style={styles.datetime}>🕒 {now}</Text>
-        <Text style={styles.stats}>
-          ✅ Normal: {normal} | ❌ Error: {error} | 🔢 Total: {total}
-        </Text>
+          <Text style={styles.datetime}>🕒 {now}</Text>
+          <Text style={styles.stats}>
+            ✅ Normal: {normal} | ❌ Error: {error} | 🔢 Total: {total}
+          </Text>
 
-        <PieChart
-          data={[
-            {
-              name: 'Normal',
-              population: normal,
-              color: '#28a745',
-              legendFontColor: '#ccc',
-              legendFontSize: 14,
-            },
-            {
-              name: 'Error',
-              population: error,
-              color: '#dc3545',
-              legendFontColor: '#ccc',
-              legendFontSize: 14,
-            },
-          ]}
-          width={screenWidth - 32}
-          height={180}
-          chartConfig={{
-            backgroundColor: '#1e1e2f',
-            backgroundGradientFrom: '#1e1e2f',
-            backgroundGradientTo: '#1e1e2f',
-            color: () => `#ccc`,
-          }}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
-        />
-      </View>
+          <PieChart
+            data={[
+              {
+                name: 'Normal',
+                population: normal,
+                color: '#28a745',
+                legendFontColor: '#444',
+                legendFontSize: 14,
+              },
+              {
+                name: 'Error',
+                population: error,
+                color: '#dc3545',
+                legendFontColor: '#444',
+                legendFontSize: 14,
+              },
+            ]}
+            width={screenWidth - 64}
+            height={180}
+            chartConfig={{
+              backgroundColor: '#ffffff',
+              backgroundGradientFrom: '#ffffff',
+              backgroundGradientTo: '#ffffff',
+              decimalPlaces: 0,
+              color: () => '#555',
+              labelColor: () => '#555',
+            }}
+            accessor="population"
+            backgroundColor="transparent"
+            paddingLeft="15"
+          />
+        </Card.Content>
+      </Card>
 
       <View style={styles.cards}>
-        {data.map((item) => (
-          <MonitorCard key={item.Id} item={item} />
-        ))}
+        {data.length > 0 ? (
+          data.map((item) => <MonitorCard key={item.Id} item={item} />)
+        ) : (
+          <Text style={styles.noData}>No monitor data available.</Text>
+        )}
       </View>
     </ScrollView>
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    backgroundColor: '#1e1e2f', // Kibana-like dark background
-    minHeight: '100%',
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+    flexGrow: 1,
   },
   dashboard: {
     marginBottom: 24,
-    padding: 20,
-    borderRadius: 12,
-    backgroundColor: '#2c2c3e',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 4,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3b3b50',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    elevation: 3,
   },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  datetime: {
-    fontSize: 14,
-    color: '#bbb',
-    marginBottom: 8,
-  },
-  stats: {
-    fontSize: 16,
-    color: '#eee',
-    marginBottom: 16,
-  },
-  cards: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    gap: 12,
-  },
-    headerRow: {
-    width: '100%',
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  logout: {
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  datetime: {
     fontSize: 14,
-    color: '#ff6666',
-    fontWeight: '600',
-    padding: 8,
+    color: '#666',
+    marginTop: 8,
+  },
+  stats: {
+    fontSize: 16,
+    color: '#222',
+    marginVertical: 12,
+  },
+  cards: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'flex-start',
+  },
+  noData: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 30,
   },
 });
-
